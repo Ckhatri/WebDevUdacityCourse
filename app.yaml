@@ -1,0 +1,16 @@
+application: udacitychirag
+version: 1
+runtime: python27
+api_version: 1
+threadsafe: true
+
+handlers:
+
+- url: /rot
+  script: rot.app
+- url: /signup
+  script: signup.app
+- url: /welcome.*
+  script: signup.app
+- url: /.*
+  script: helloworld.app
