@@ -28,6 +28,7 @@ class Post(db.Model):
 	created = db.DateTimeProperty(auto_now_add = True, required = True)
 
 class Blog(Handler):
+	#shows the ten most recent posts.
 	def render_front(self, posts = ""):
 		posts = db.GqlQuery("SELECT * FROM Post ORDER BY created DESC limit 10")
 		self.render("blog.html", posts=posts)
@@ -46,16 +47,20 @@ class NewPost(Handler):
 		title = self.request.get('title')
 		post = self.request.get("post")
 
+		#if successfully created a new post redirect to a new url with the id being after /
 		if title and post:
 			p = Post(title = title, post = post)
 			p.put()
 			self.redirect('/blog/%s' % str(p.key().id()))
 
+		#else error show them the same page again
 		else:
 			error = "We need both a title and something to post"
 			self.render_format(title = title, post = post, error = error)
 
 class successNewPost(Handler):
+
+	#after successfully posting, show them the success page based on the id given.
 	def get(self, post_id):
 		key = db.Key.from_path('Post', int(post_id))
 		post = db.get(key)
