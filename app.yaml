@@ -5,7 +5,14 @@ api_version: 1
 threadsafe: true
 
 handlers:
-
+- url: /blog.*
+  script: blog.app
+- url: /asciichan
+  script: asciichan.app
+- url: /slist
+  script: slist.app
+- url: /fizzbuzz
+  script: slist.app
 - url: /rot
   script: rot.app
 - url: /signup
@@ -14,3 +21,7 @@ handlers:
   script: signup.app
 - url: /.*
   script: helloworld.app
+
+libraries:
+- name: jinja2
+  version: latest
