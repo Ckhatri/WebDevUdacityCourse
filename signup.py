@@ -150,6 +150,8 @@ class SignUp(webapp2.RequestHandler):
             if user_id_cookie:
                 if user_username in rainbowTables.keys():
                     errorUser = "User already exists!"
+                    emailToInput = ""
+                    usernameToInput = ""
                     self.write_form(usernameToInput, passwordToInput, verifyToInput, emailToInput, errorUser, errorPass, errorVerify, errorEmail)
             elif not have_error:
                 hashsling = make_pw_hash(user_username, user_password)
