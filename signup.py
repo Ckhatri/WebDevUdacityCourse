@@ -121,22 +121,6 @@ class User(db.Model):
     pwHash = db.StringProperty(required = True)
     email = db.StringProperty()
 
-    def getByID(cls, id):
-        return User.get_by_id(id)
-
-    def getByName(cls, name):
-        user = User.all().filter('name =', name).get()
-        return user
-
-    def register(cls, username, password, email = None):
-        pw_hash = make_pw_hash(username, password)
-        return User(username = username, pwHash = pw_hash, email = email)
-
-    def login(cls, username, password):
-        u = cls.by_name(username)
-        if u and valid_pw(username):
-            return u
-
 class SignUp(webapp2.RequestHandler):
         def write_form(self, username = "", password = "", verify = "", email = "", error_username = "", error_password = "", error_verify = "", error_email = ""):
             self.response.out.write(form % {"username": username, "password": password, "verify": verify, "email": email, "error_username": error_username, "error_password": error_password, "error_verify": error_verify, "error_email":error_email})
