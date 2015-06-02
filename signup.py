@@ -199,12 +199,35 @@ class Welcome(webapp2.RequestHandler):
         self.response.out.write(welcoming)
 
 class Login(Handler):
-    def render_format(self, username="", password=""):
-        self.render("login.html", username = username, password = "")
+    def render_format(self, username="", password="", error_username= "", error_password = ""):
+        self.render("login.html", username = username, password = "", error_username = error_username, error_password = error_password)
     
     def get(self):
         self.render_format()
-    
-    
+
+    def post(self):
+        username = self.request.get("username")
+        password = self.request.get("password")
+        userError = ""
+        passError = ""
+        if username and password:
+            if username in rainbowTables.keys():
+                user_hash = rainbowTables[username]
+                if valid_pw(username, password, user_hash):
+                    self.redirect('/welcome')
+                else:
+                    passError = "Password is incorrect"
+                    self.render_format(username, "", userError, passError)
+            else:
+                userError = "User does not exist"
+                self.render_format("", "", userError, passError)
+        elif username and not password:
+            passError = "Please enter a password"
+            self.render_format(username, "", userError, passError)
+        elif password and not username:
+            userError = "Please enter a username"
+            self.render_format("", "", userError, passError)
+        else:
+            self.render_format()
 
 app = webapp2.WSGIApplication([('/signup', SignUp), ('/welcome', Welcome), ('/login', Login)], debug = True)
