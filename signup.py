@@ -192,6 +192,8 @@ class Welcome(webapp2.RequestHandler):
     def get(self):
         welcoming = "Welcome, "
         user_id_cookie = self.request.cookies.get('user_id')
+        if not user_id_cookie:
+            self.redirect('/signup')
         for username in rainbowTables:
             if rainbowTables[username] == user_id_cookie:
                 welcoming += username
@@ -214,6 +216,7 @@ class Login(Handler):
             if username in rainbowTables.keys():
                 user_hash = rainbowTables[username]
                 if valid_pw(username, password, user_hash):
+                    self.response.headers.add_header('Set-Cookie', 'user_id=%s' % user_hash)
                     self.redirect('/welcome')
                 else:
                     passError = "Password is incorrect"
@@ -230,4 +233,9 @@ class Login(Handler):
         else:
             self.render_format()
 
-app = webapp2.WSGIApplication([('/signup', SignUp), ('/welcome', Welcome), ('/login', Login)], debug = True)
+class Logout(Handler):
+    def get(self):
+        self.response.headers.add_header('Set-Cookie', 'user_id=%s' % "")
+        self.redirect('/signup')
+
+app = webapp2.WSGIApplication([('/signup', SignUp), ('/welcome', Welcome), ('/login', Login), ('/logout', Logout)], debug = True)
