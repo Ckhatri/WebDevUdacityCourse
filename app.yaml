@@ -5,6 +5,8 @@ api_version: 1
 threadsafe: true
 
 handlers:
+- url: /login.*
+  script: signup.app
 - url: /play.*
   script: play.app
 - url: /blog.*

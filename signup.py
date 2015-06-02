@@ -1,5 +1,14 @@
 import webapp2
 import validation
+import os
+import webapp2
+import jinja2
+
+from google.appengine.ext import db
+
+
+template_dir = os.path.join(os.path.dirname(__file__), 'templates')
+jina_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape = True)
 
 #found at udacitychirag.appspot.com/signup
 #html form that the page shows at first, has certain values to be filled in such as username, email and the errors. By default these will be blank and will only change if prompted by a failed submit.
@@ -96,6 +105,17 @@ def valid_pw(name, pw, h):
         salt = h.split('|')[1]
         return h == make_pw_hash(name, pw, salt)
 
+class Handler(webapp2.RequestHandler):
+    def write(self, *a, **kw):
+        self.response.out.write(*a, **kw)
+    
+    def render_str(self, template, **params):
+        t = jina_env.get_template(template)
+        return t.render(params)
+
+    def render(self, template, **kw):
+        self.write(self.render_str(template, **kw))
+
 class SignUp(webapp2.RequestHandler):
         def write_form(self, username = "", password = "", verify = "", email = "", error_username = "", error_password = "", error_verify = "", error_email = ""):
             self.response.out.write(form % {"username": username, "password": password, "verify": verify, "email": email, "error_username": error_username, "error_password": error_password, "error_verify": error_verify, "error_email":error_email})
@@ -178,4 +198,13 @@ class Welcome(webapp2.RequestHandler):
                 welcoming += "!"
         self.response.out.write(welcoming)
 
-app = webapp2.WSGIApplication([('/signup', SignUp), ('/welcome', Welcome)], debug = True)
+class Login(Handler):
+    def render_format(self, username="", password=""):
+        self.render("login.html", username = username, password = "")
+    
+    def get(self):
+        self.render_format()
+    
+    
+
+app = webapp2.WSGIApplication([('/signup', SignUp), ('/welcome', Welcome), ('/login', Login)], debug = True)
