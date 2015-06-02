@@ -142,8 +142,9 @@ class SignUp(webapp2.RequestHandler):
                 have_error = True
             #if theres an error with the email tell them, if there isn't save it and show if there is an issue with anything else.
             if not validEmail:
-                errorEmail = "That is not a valid email"
-                have_error = True
+                if not user_email == "":
+                    errorEmail = "That is not a valid email"
+                    have_error = True
             else:
                 emailToInput = user_email
             user_id_cookie = self.request.cookies.get('user_id')
