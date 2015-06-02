@@ -116,6 +116,27 @@ class Handler(webapp2.RequestHandler):
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
 
+class User(db.Model):
+    name = db.StringProperty(required = True)
+    pwHash = db.StringProperty(required = True)
+    email = db.StringProperty()
+
+    def getByID(cls, id):
+        return User.get_by_id(id)
+
+    def getByName(cls, name):
+        user = User.all().filter('name =', name).get()
+        return user
+
+    def register(cls, username, password, email = None):
+        pw_hash = make_pw_hash(username, password)
+        return User(username = username, pwHash = pw_hash, email = email)
+
+    def login(cls, username, password):
+        u = cls.by_name(username)
+        if u and valid_pw(username):
+            return u
+
 class SignUp(webapp2.RequestHandler):
         def write_form(self, username = "", password = "", verify = "", email = "", error_username = "", error_password = "", error_verify = "", error_email = ""):
             self.response.out.write(form % {"username": username, "password": password, "verify": verify, "email": email, "error_username": error_username, "error_password": error_password, "error_verify": error_verify, "error_email":error_email})
@@ -169,14 +190,17 @@ class SignUp(webapp2.RequestHandler):
                 emailToInput = user_email
             user_id_cookie = self.request.cookies.get('user_id')
             if user_id_cookie:
-                if user_username in rainbowTables.keys():
-                    errorUser = "User already exists!"
-                    emailToInput = ""
-                    usernameToInput = ""
-                    self.write_form(usernameToInput, passwordToInput, verifyToInput, emailToInput, errorUser, errorPass, errorVerify, errorEmail)
+                for user in rainbowTables:
+                    if rainbowTables[user] == user_id_cookie:
+                        errorUser = "User already exists!"
+                        emailToInput = ""
+                        usernameToInput = ""
+                        self.write_form(usernameToInput, passwordToInput, verifyToInput, emailToInput, errorUser, errorPass, errorVerify, errorEmail)
             elif not have_error:
                 hashsling = make_pw_hash(user_username, user_password)
                 self.response.headers.add_header('Set-Cookie', 'user_id=%s' % hashsling)
+                user = User(name = user_username, pwHash = hashsling, email = user_email)
+                user.put()
                 rainbowTables.update({user_username: hashsling})
                 self.redirect('/welcome')
             elif have_error:
@@ -235,7 +259,7 @@ class Login(Handler):
 
 class Logout(Handler):
     def get(self):
-        self.response.headers.add_header('Set-Cookie', 'user_id=%s' % "")
+        self.response.headers.add_header('Set-Cookie', 'user_id=; Path=/')
         self.redirect('/signup')
 
 app = webapp2.WSGIApplication([('/signup', SignUp), ('/welcome', Welcome), ('/login', Login), ('/logout', Logout)], debug = True)
